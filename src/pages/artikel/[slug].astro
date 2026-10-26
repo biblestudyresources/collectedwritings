@@ -1,22 +1,26 @@
 ---
-import { render } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import { loadArticles, slugOf, articleUrl, volumeUrl } from '../../lib/library';
 
 export async function getStaticPaths() {
   const all = await loadArticles();
+  const eiligNachId = new Map((await getCollection('eilig')).map((e) => [e.id, e]));
   return all.map((article) => {
     const sameVolume = all.filter((a) => a.data.volume === article.data.volume);
     const j = sameVolume.indexOf(article);
     return {
       params: { slug: slugOf(article.data.id) },
-      props: { article, prev: sameVolume[j - 1] ?? null, next: sameVolume[j + 1] ?? null },
+      props: { article, eilig: eiligNachId.get(article.data.id) ?? null, prev: sameVolume[j - 1] ?? null, next: sameVolume[j + 1] ?? null },
     };
   });
 }
-const { article, prev, next } = Astro.props;
+const { article, eilig, prev, next } = Astro.props;
 const { Content } = await render(article);
 const d = article.data;
+
+// Kurzfassung „Für den eiligen Leser“ (gibt es nur, wenn der Abschnitt in Notion ausgefüllt war)
+const EiligContent = eilig ? (await render(eilig)).Content : null;
 ---
 <Base title={`${d.title} – Band ${d.volume}`} currentVolume={d.volume} currentId={d.id}>
   <article>
@@ -28,6 +32,13 @@ const d = article.data;
         <button type="button" onclick="window.print()">Drucken oder als PDF speichern</button>
       </p>
     </header>
+    {EiligContent && (
+      <aside class="eilig" aria-labelledby="eilig-titel">
+        <h2 id="eilig-titel">Für den eiligen Leser</h2>
+        <p class="muted">Zusammenfassung der Redaktion, nicht von J. N. Darby.</p>
+        <div class="prose"><EiligContent /></div>
+      </aside>
+    )}
     <div class="prose"><Content /></div>
   </article>
   <nav class="article-nav" aria-label="Weitere Artikel in diesem Band">

@@ -9,7 +9,9 @@
     "test": "node --test tests/*.test.mjs",
     "build": "npm run check && astro build",
     "preview": "astro preview",
-    "long": "node scripts/make-long-article.mjs"
+    "long": "node scripts/make-long-article.mjs",
+    "notion:test": "node --env-file-if-exists=.env scripts/notion-test.mjs",
+    "fetch:notion": "node --env-file-if-exists=.env scripts/fetch-notion.mjs"
   },
   "dependencies": {
     "astro": "7.4.2",
