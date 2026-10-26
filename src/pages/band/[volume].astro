@@ -1,0 +1,21 @@
+---
+import Base from '../../layouts/Base.astro';
+import { loadArticles, groupByVolume, articleUrl } from '../../lib/library';
+
+export async function getStaticPaths() {
+  const volumes = groupByVolume(await loadArticles());
+  return volumes.map((v) => ({ params: { volume: String(v.volume) }, props: { v } }));
+}
+const { v } = Astro.props;
+---
+<Base title={`Band ${v.volume}: ${v.title}`} currentVolume={v.volume}>
+  <h1>Band {v.volume}: {v.title}</h1>
+  <ol class="articles">
+    {v.articles.map((a) => (
+      <li value={a.data.position}>
+        <a href={articleUrl(a)}>{a.data.title}</a>
+        {a.data.tags.length > 0 && <span class="muted">{a.data.tags.join(', ')}</span>}
+      </li>
+    ))}
+  </ol>
+</Base>

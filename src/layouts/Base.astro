@@ -1,0 +1,51 @@
+---
+import '../styles/global.css';
+import { loadArticles, groupByVolume, articleUrl, volumeUrl, withBase } from '../lib/library';
+
+interface Props {
+  title: string;
+  currentVolume?: number;
+  currentId?: string;
+}
+const { title, currentVolume, currentId } = Astro.props;
+const volumes = groupByVolume(await loadArticles());
+---
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <a class="skip" href="#inhalt">Zum Inhalt springen</a>
+    <header class="site-header">
+      <a class="site-title" href={withBase('/')}>Bibliothek der Schriften von J. N. Darby</a>
+    </header>
+    <div class="layout">
+      <nav class="toc" aria-label="Bände und Artikel">
+        {volumes.map((v) => (
+          <details open={v.volume === currentVolume}>
+            <summary>Band {v.volume}: {v.title}</summary>
+            <ol>
+              {v.articles.map((a) => (
+                <li>
+                  <a href={articleUrl(a)} aria-current={a.data.id === currentId ? 'page' : undefined}>
+                    {a.data.title}
+                  </a>
+                </li>
+              ))}
+            </ol>
+            <p class="toc-all"><a href={volumeUrl(v.volume)}>Übersicht Band {v.volume}</a></p>
+          </details>
+        ))}
+      </nav>
+      <main id="inhalt">
+        <slot />
+      </main>
+    </div>
+    <footer class="site-footer">
+      <p>Prototyp mit erfundenen Testtexten.</p>
+    </footer>
+  </body>
+</html>

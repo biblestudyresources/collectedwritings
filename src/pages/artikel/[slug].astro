@@ -1,0 +1,37 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { loadArticles, slugOf, articleUrl, volumeUrl } from '../../lib/library';
+
+export async function getStaticPaths() {
+  const all = await loadArticles();
+  return all.map((article) => {
+    const sameVolume = all.filter((a) => a.data.volume === article.data.volume);
+    const j = sameVolume.indexOf(article);
+    return {
+      params: { slug: slugOf(article.data.id) },
+      props: { article, prev: sameVolume[j - 1] ?? null, next: sameVolume[j + 1] ?? null },
+    };
+  });
+}
+const { article, prev, next } = Astro.props;
+const { Content } = await render(article);
+const d = article.data;
+---
+<Base title={`${d.title} – Band ${d.volume}`} currentVolume={d.volume} currentId={d.id}>
+  <article>
+    <header class="article-head">
+      <p class="muted"><a href={volumeUrl(d.volume)}>Band {d.volume}: {d.volumeTitle}</a></p>
+      <h1>{d.title}</h1>
+      {d.tags.length > 0 && <p class="muted">Stichwörter: {d.tags.join(', ')}</p>}
+      <p class="article-actions">
+        <button type="button" onclick="window.print()">Drucken oder als PDF speichern</button>
+      </p>
+    </header>
+    <div class="prose"><Content /></div>
+  </article>
+  <nav class="article-nav" aria-label="Weitere Artikel in diesem Band">
+    {prev ? <a rel="prev" href={articleUrl(prev)}>Zurück: {prev.data.title}</a> : <span />}
+    {next ? <a rel="next" href={articleUrl(next)}>Weiter: {next.data.title}</a> : <span />}
+  </nav>
+</Base>

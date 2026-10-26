@@ -1,0 +1,19 @@
+---
+import Base from '../layouts/Base.astro';
+import { loadArticles, groupByVolume, volumeUrl } from '../lib/library';
+
+const volumes = groupByVolume(await loadArticles());
+---
+<Base title="Bibliothek der Schriften von J. N. Darby">
+  <h1>Bibliothek der Schriften von J. N. Darby</h1>
+  <p>Deutsche Übersetzungen der Collected Writings, geordnet nach Bänden.</p>
+  <h2>Bände</h2>
+  <ul class="volumes">
+    {volumes.map((v) => (
+      <li>
+        <a href={volumeUrl(v.volume)}>Band {v.volume}: {v.title}</a>
+        <span class="muted">{v.articles.length} Artikel</span>
+      </li>
+    ))}
+  </ul>
+</Base>
