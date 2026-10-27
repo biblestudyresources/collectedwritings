@@ -1,0 +1,71 @@
+name: Website veröffentlichen
+
+on:
+  # Auf Knopfdruck (GitHub → Actions → "Website veröffentlichen" → Run workflow)
+  workflow_dispatch:
+  # Täglich automatisch, 05:00 UTC (= 06:00 oder 07:00 Uhr deutscher Zeit)
+  schedule:
+    - cron: "0 5 * * *"
+  # Auch bei Änderungen am Code (nicht bei jedem Notion-Edit, das läuft über den Zeitplan)
+  push:
+    branches: [main]
+
+# Rechte, die GitHub Pages zum Veröffentlichen braucht
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Nie zwei Veröffentlichungen gleichzeitig
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  bauen:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code holen
+        uses: actions/checkout@v4
+
+      - name: Node.js einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Abhängigkeiten installieren
+        run: npm ci
+
+      - name: Tests ausführen (falls vorhanden)
+        run: npm test --if-present
+
+      - name: Freigegebene Artikel aus Notion holen
+        run: npm run fetch:notion
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+
+      - name: Website bauen
+        run: npm run build
+        env:
+          CONTENT_DIR: content-notion
+          # Von astro.config.mjs gelesen (Adresse der Website auf GitHub Pages)
+          SITE_URL: https://biblestudyresources.github.io
+          BASE_PATH: /collectedwritings
+
+      - name: Fertige Website hochladen
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  veroeffentlichen:
+    needs: bauen
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Auf GitHub Pages veröffentlichen
+        id: deployment
+        uses: actions/deploy-pages@v4
