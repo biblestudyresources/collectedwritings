@@ -1,5 +1,11 @@
 name: Website veröffentlichen
 
+# EIN/AUS-SCHALTER
+# Repository-Variable SEITE_AKTIV (Settings → Secrets and variables → Actions → Variables):
+#   nicht gesetzt oder beliebiger Wert  → Website ist AN (echte Inhalte aus Notion)
+#   nein                                → Website ist AUS (nur eine neutrale Platzhalterseite)
+# Nach dem Ändern der Variable den Workflow einmal von Hand starten, damit es sofort wirkt.
+
 on:
   # Auf Knopfdruck (GitHub → Actions → "Website veröffentlichen" → Run workflow)
   workflow_dispatch:
@@ -28,25 +34,31 @@ jobs:
       - name: Code holen
         uses: actions/checkout@v4
 
+      # ---------- Website AN ----------
       - name: Node.js einrichten
+        if: vars.SEITE_AKTIV != 'nein'
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
 
       - name: Abhängigkeiten installieren
+        if: vars.SEITE_AKTIV != 'nein'
         run: npm ci
 
       - name: Tests ausführen (falls vorhanden)
+        if: vars.SEITE_AKTIV != 'nein'
         run: npm test --if-present
 
       - name: Freigegebene Artikel aus Notion holen
+        if: vars.SEITE_AKTIV != 'nein'
         run: npm run fetch:notion
         env:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
 
       - name: Website bauen
+        if: vars.SEITE_AKTIV != 'nein'
         run: npm run build
         env:
           CONTENT_DIR: content-notion
@@ -54,7 +66,31 @@ jobs:
           SITE_URL: https://biblestudyresources.github.io
           BASE_PATH: /collectedwritings
 
-      - name: Fertige Website hochladen
+      # ---------- Website AUS ----------
+      - name: Platzhalterseite erzeugen (Website ist ausgeschaltet)
+        if: vars.SEITE_AKTIV == 'nein'
+        run: |
+          mkdir -p dist
+          cat > dist/index.html <<'HTML'
+          <!doctype html>
+          <html lang="de">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <meta name="robots" content="noindex">
+            <title>Derzeit nicht verfügbar</title>
+            <style>
+              body { font-family: Georgia, serif; max-width: 32rem; margin: 20vh auto; padding: 0 1rem; text-align: center; color: #333; }
+            </style>
+          </head>
+          <body>
+            <h1>Derzeit nicht verfügbar</h1>
+            <p>Diese Seite ist vorübergehend nicht erreichbar.</p>
+          </body>
+          </html>
+          HTML
+
+      - name: Fertige Seite hochladen
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
