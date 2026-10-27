@@ -40,6 +40,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          # Immer die neueste 22.x laden; Astro verlangt mindestens 22.23.4,
+          # die auf dem Server vorinstallierte Version kann älter sein
+          check-latest: true
           cache: npm
 
       - name: Abhängigkeiten installieren
