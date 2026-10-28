@@ -52,7 +52,13 @@ export function validate(dir) {
       continue;
     }
     for (const k of REQUIRED) if (data[k] === undefined || data[k] === '') err(`Pflichtfeld „${k}“ fehlt`);
-
+        // Schlagwörter sind optional (auch `tags: []`), müssen aber sauber sein
+    if (data.tags !== undefined) {
+      if (!Array.isArray(data.tags) || data.tags.some((t) => typeof t !== 'string' || !t.trim()))
+        err('„tags“ muss eine Liste nicht-leerer Texte sein, zum Beispiel ["Gnade", "Bund"]');
+      else if (new Set(data.tags.map((t) => t.trim())).size !== data.tags.length)
+        err('Ein Schlagwort kommt in diesem Artikel doppelt vor');
+    }
     const m = typeof data.id === 'string' ? data.id.match(ID_RE) : null;
     if (data.id && !m) err(`ID „${data.id}“ hat nicht das Format <Band>_<Kürzel>_<Position>`);
     if (m) {
@@ -84,6 +90,16 @@ export function validate(dir) {
     const titles = new Set(list.map((a) => a.data.volumeTitle).filter(Boolean));
     if (titles.size > 1) errors.push(`Band ${vol}: uneinheitliche Bandbezeichnung (${[...titles].join(' / ')})`);
   }
+  // Schlagwörter, die sich nur in der Schreibweise unterscheiden, wären zwei getrennte Filter
+  const spellings = new Map();
+  for (const a of approved)
+    for (const t of Array.isArray(a.data.tags) ? a.data.tags : []) {
+      if (typeof t !== 'string' || !t.trim()) continue;
+      const key = t.trim().toLowerCase();
+      spellings.set(key, new Set([...(spellings.get(key) ?? []), t.trim()]));
+    }
+  for (const set of spellings.values())
+    if (set.size > 1) warnings.push(`Schlagwörter unterscheiden sich nur in der Schreibweise: ${[...set].map((t) => `„${t}“`).join(', ')}`);
   return { errors, warnings, approved: approved.length };
 }
 

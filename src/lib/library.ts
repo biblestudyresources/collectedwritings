@@ -11,6 +11,7 @@ export const withBase = (path: string) =>
 
 export const articleUrl = (a: Article) => withBase(`/artikel/${slugOf(a.data.id)}/`);
 export const volumeUrl = (volume: number) => withBase(`/band/${volume}/`);
+export const tagUrl = (tag: string) => withBase('/schlagwoerter/') + '?' + new URLSearchParams({ tag });
 
 /** Zweite Sicherung: nur freigegebene Artikel, geordnet nach Band und Position. */
 export async function loadArticles(): Promise<Article[]> {

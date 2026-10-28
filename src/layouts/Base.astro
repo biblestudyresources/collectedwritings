@@ -16,11 +16,21 @@ const volumes = groupByVolume(await loadArticles());
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
+    <link rel="stylesheet" href={withBase('/pagefind/pagefind-component-ui.css')} />
+    <script is:inline type="module" src={withBase('/pagefind/pagefind-component-ui.js')}></script>
   </head>
-  <body>
+  <body data-pagefind-pfad={withBase('/pagefind/')}>
     <a class="skip" href="#inhalt">Zum Inhalt springen</a>
-    <header class="site-header">
+        <header class="site-header">
       <a class="site-title" href={withBase('/')}>Bibliothek der Schriften von J. N. Darby</a>
+      <div class="site-tools">
+        <a href={withBase('/schlagwoerter/')}>Schlagwörter</a>
+        <div class="site-search">
+          <pagefind-config base-url={withBase('/')} highlight-param="highlight" excerpt-length="25"></pagefind-config>
+          <pagefind-modal-trigger></pagefind-modal-trigger>
+          <pagefind-modal></pagefind-modal>
+        </div>
+      </div>
     </header>
     <div class="layout">
       <nav class="toc" aria-label="Bände und Artikel">
@@ -47,5 +57,16 @@ const volumes = groupByVolume(await loadArticles());
     <footer class="site-footer">
       <p>Prototyp mit erfundenen Testtexten.</p>
     </footer>
+    <script is:inline type="module">
+      // Nur aktiv, wenn man über die Suche kommt (Adresse enthält ?highlight=...)
+      if (new URLSearchParams(location.search).has('highlight')) {
+        try {
+          await import(document.body.dataset.pagefindPfad + 'pagefind-highlight.js');
+          new PagefindHighlight({ highlightParam: 'highlight' });
+        } catch (e) {
+          console.warn('Markierung nicht verfügbar:', e);
+        }
+      }
+    </script>
   </body>
 </html>

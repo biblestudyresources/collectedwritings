@@ -1,0 +1,13 @@
+---
+// Zeigt Schlagwörter als Links. Jeder Link führt zur Schlagwort-Seite
+// mit diesem Schlagwort vorausgewählt. Ohne Schlagwörter erscheint nichts.
+import { tagUrl } from '../lib/library';
+
+interface Props {
+  tags: string[];
+}
+const { tags } = Astro.props;
+---
+{tags.length > 0 && (
+  <p class="muted tags">Stichwörter: {tags.map((tag, i) => (<>{i > 0 && ', '}<a href={tagUrl(tag)}>{tag}</a></>))}</p>
+)}

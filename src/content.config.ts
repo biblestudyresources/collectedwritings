@@ -2,6 +2,7 @@ import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 import { mkdirSync } from 'node:fs';
+import { cleanTags } from './lib/tags.mjs';
 
 // Quelle der Artikeldateien. Standard: die erfundenen Testartikel im Prototyp.
 // Für Artikel aus Notion: Umgebungsvariable CONTENT_DIR=content-notion setzen.
@@ -18,7 +19,7 @@ const articles = defineCollection({
     volume: z.number().int().positive(),
     volumeTitle: z.string().min(1),
     position: z.number().int().positive(),
-    tags: z.array(z.string()).default([]),
+    tags: z.array(z.string()).default([]).transform(cleanTags),
     status: z.string(),
   }),
 });

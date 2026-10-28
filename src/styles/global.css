@@ -47,6 +47,7 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
 .skip { position: absolute; left: -999px; }
 .skip:focus { left: 1rem; top: 1rem; z-index: 10; padding: 0.5rem 1rem; background: var(--color-surface); }
 
+.site-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem 1rem; }
 .site-header, .site-footer { padding: 1rem 1.25rem; font-family: var(--font-ui); }
 .site-header { border-bottom: 1px solid var(--color-border); }
 .site-title { color: var(--color-text); font-weight: 600; text-decoration: none; }
@@ -99,6 +100,15 @@ sup a { text-decoration: none; padding: 0 0.1em; }
   main { padding: 2rem 2.5rem 4rem; }
 }
 
+/* Kopfzeile: Link zu den Schlagwörtern neben der Suche */
+.site-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; }
+
+/* Schlagwort-Seite: Auswahl als Schaltflächen */
+.tag-filter { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
+.tag-filter button[aria-pressed="true"] { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-bg); }
+.tag-filter button[aria-pressed="true"] .muted { color: inherit; }
+.tag-filter button[aria-pressed="true"]::before { content: "✓\00a0"; content: "✓\00a0" / ""; }
+
 @media print {
   .site-header, .toc, .skip, .article-actions, .article-nav, .site-footer { display: none !important; }
   body { background: #fff; color: #000; font-size: 11pt; line-height: 1.5; }
@@ -110,4 +120,17 @@ sup a { text-decoration: none; padding: 0 0.1em; }
   blockquote, li { break-inside: avoid; }
   .eilig { background: none; border: 1px solid #000; border-left-width: 4px; break-inside: avoid; }
   @page { margin: 2cm; }
+  p, li, blockquote { orphans: 3; widows: 3; }
+  .footnotes { font-size: 9.5pt; line-height: 1.4; }
+  .eilig .prose { font-size: 10.5pt; }
+}
+/* Suchfenster: Auszüge nie abschneiden, damit das Suchwort immer sichtbar ist */
+.pf-modal [class*="excerpt"] {
+  display: block !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  max-height: none !important;
+  -webkit-line-clamp: unset !important;
+  line-clamp: none !important;
 }

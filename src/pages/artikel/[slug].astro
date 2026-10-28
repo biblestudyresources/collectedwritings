@@ -1,6 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
+import TagList from '../../components/TagList.astro';
 import { loadArticles, slugOf, articleUrl, volumeUrl } from '../../lib/library';
 
 export async function getStaticPaths() {
@@ -23,17 +24,17 @@ const d = article.data;
 const EiligContent = eilig ? (await render(eilig)).Content : null;
 ---
 <Base title={`${d.title} – Band ${d.volume}`} currentVolume={d.volume} currentId={d.id}>
-  <article>
+  <article data-pagefind-body>                                    <!-- 1 -->
     <header class="article-head">
-      <p class="muted"><a href={volumeUrl(d.volume)}>Band {d.volume}: {d.volumeTitle}</a></p>
+      <p class="muted" data-pagefind-ignore><a href={volumeUrl(d.volume)}>Band {d.volume}: {d.volumeTitle}</a></p>   <!-- 2 -->
       <h1>{d.title}</h1>
-      {d.tags.length > 0 && <p class="muted">Stichwörter: {d.tags.join(', ')}</p>}
-      <p class="article-actions">
+      <TagList tags={d.tags} />
+      <p class="article-actions" data-pagefind-ignore>            <!-- 3 -->
         <button type="button" onclick="window.print()">Drucken oder als PDF speichern</button>
       </p>
     </header>
     {EiligContent && (
-      <aside class="eilig" aria-labelledby="eilig-titel">
+      <aside class="eilig" aria-labelledby="eilig-titel" data-pagefind-ignore>   <!-- 4 -->
         <h2 id="eilig-titel">Für den eiligen Leser</h2>
         <p class="muted">Zusammenfassung der Redaktion, nicht von J. N. Darby.</p>
         <div class="prose"><EiligContent /></div>

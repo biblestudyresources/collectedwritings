@@ -4,7 +4,7 @@ title: "Testartikel: Kurze Einleitung"
 volume: 1
 volumeTitle: "Ecclesiastical (1)"
 position: 1
-tags: ["test", "einleitung"]
+tags: ["test", "einleitung", "multi"]
 status: "freigegeben"
 ---
 Dies ist ein erfundener Testtext. Er prüft nur, ob ein kurzer Artikel mit einem einzigen Absatz korrekt angezeigt wird.

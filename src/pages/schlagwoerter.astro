@@ -1,0 +1,101 @@
+---
+import Base from '../layouts/Base.astro';
+import { loadArticles, articleUrl, withBase } from '../lib/library';
+import { countTags } from '../lib/tags.mjs';
+
+const articles = await loadArticles();
+const tags = countTags(articles.map((a) => a.data.tags));
+// Artikel ohne Schlagwörter können nie zu einer Auswahl passen und stehen deshalb nicht in der Liste.
+const tagged = articles.filter((a) => a.data.tags.length > 0);
+---
+<Base title="Schlagwörter – Bibliothek der Schriften von J. N. Darby">
+  <h1>Schlagwörter</h1>
+  {tags.length === 0 ? (
+    <p>Noch hat kein Artikel Schlagwörter.</p>
+  ) : (
+    <>
+      <p>Schlagwörter auswählen: Angezeigt werden die Artikel, die alle gewählten Schlagwörter haben.</p>
+      <noscript>
+        <p>Zum Filtern wird JavaScript benötigt. Alle Artikel stehen in den <a href={withBase('/')}>Bänden</a>.</p>
+      </noscript>
+      <div class="tag-filter" id="tag-filter" role="group" aria-label="Schlagwörter">
+        {tags.map(({ tag, count }) => (
+          <button type="button" aria-pressed="false" data-tag={tag}>{tag} <span class="muted">({count})</span></button>
+        ))}
+      </div>
+      <p><button type="button" id="tag-reset" hidden>Auswahl aufheben</button></p>
+      <p id="tag-status" class="muted" role="status"></p>
+      <ul class="articles" id="tag-results">
+        {tagged.map((a) => (
+          <li hidden data-tags={JSON.stringify(a.data.tags)}>
+            <a href={articleUrl(a)}>{a.data.title}</a>
+            <span class="muted">Band {a.data.volume}</span>
+          </li>
+        ))}
+      </ul>
+    </>
+  )}
+
+  <script>
+  import { matchesAllTags } from '../lib/tags.mjs';
+
+  const buttons = [...document.querySelectorAll<HTMLButtonElement>('#tag-filter button[data-tag]')];
+  const items = [...document.querySelectorAll<HTMLLIElement>('#tag-results li')];
+  const status = document.getElementById('tag-status');
+  const reset = document.getElementById('tag-reset') as HTMLButtonElement | null;
+
+  // Auf einer Seite ohne Schlagwörter gibt es nichts zu tun.
+  if (buttons.length > 0 && status && reset) {
+    const known = new Set(buttons.map((b) => b.dataset.tag ?? ''));
+    const tagsOfItem = items.map((li) => JSON.parse(li.dataset.tags ?? '[]') as string[]);
+
+    // Auswahl aus der Adresse lesen (?tag=…&tag=…). Unbekannte Schlagwörter werden gemeldet, aber nicht verwendet.
+    const requested = new URLSearchParams(location.search).getAll('tag');
+    const selected = new Set(requested.filter((t) => known.has(t)));
+    let note = requested
+      .filter((t) => !known.has(t))
+      .map((t) => `Das Schlagwort „${t}“ gibt es nicht. `)
+      .join('');
+
+    const render = () => {
+      const chosen = [...selected];
+
+      let count = 0;
+      items.forEach((li, i) => {
+        const show = chosen.length > 0 && matchesAllTags(tagsOfItem[i], chosen);
+        li.hidden = !show;
+        if (show) count++;
+      });
+      buttons.forEach((b) => b.setAttribute('aria-pressed', String(selected.has(b.dataset.tag ?? ''))));
+      reset.hidden = chosen.length === 0;
+
+      let message: string;
+      if (chosen.length === 0) message = 'Noch kein Schlagwort ausgewählt.';
+      else if (count === 0) message = 'Kein Artikel hat alle gewählten Schlagwörter.';
+      else message = count === 1 ? '1 Artikel gefunden.' : `${count} Artikel gefunden.`;
+      status.textContent = note + message;
+      note = '';
+
+      // Auswahl in der Adresse festhalten, damit man sie als Lesezeichen speichern oder weitergeben kann.
+      const params = new URLSearchParams();
+      chosen.forEach((t) => params.append('tag', t));
+      history.replaceState(null, '', location.pathname + (chosen.length > 0 ? `?${params}` : ''));
+    };
+
+    buttons.forEach((b) =>
+      b.addEventListener('click', () => {
+        const tag = b.dataset.tag ?? '';
+        if (selected.has(tag)) selected.delete(tag);
+        else selected.add(tag);
+        render();
+      }),
+    );
+    reset.addEventListener('click', () => {
+      selected.clear();
+      render();
+      buttons[0].focus(); // der Knopf „Auswahl aufheben“ verschwindet, der Fokus soll nicht verloren gehen
+    });
+    render();
+  }
+</script>
+</Base>
