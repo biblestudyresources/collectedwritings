@@ -40,7 +40,7 @@ const EiligContent = eilig ? (await render(eilig)).Content : null;
         <div class="prose"><EiligContent /></div>
       </aside>
     )}
-    <div class="prose"><Content /></div>
+    <div class="prose" data-glossar><Content /></div>   <!-- 5: nur hier werden Glossarbegriffe markiert -->
   </article>
   <nav class="article-nav" aria-label="Weitere Artikel in diesem Band">
     {prev ? <a rel="prev" href={articleUrl(prev)}>Zurück: {prev.data.title}</a> : <span />}

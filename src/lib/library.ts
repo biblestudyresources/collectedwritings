@@ -11,6 +11,7 @@ export const withBase = (path: string) =>
 
 export const articleUrl = (a: Article) => withBase(`/artikel/${slugOf(a.data.id)}/`);
 export const volumeUrl = (volume: number) => withBase(`/band/${volume}/`);
+export const glossarUrl = (id?: string) => withBase('/glossar/') + (id ? `#${id}` : '');
 export const tagUrl = (tag: string) => withBase('/schlagwoerter/') + '?' + new URLSearchParams({ tag });
 
 /** Zweite Sicherung: nur freigegebene Artikel, geordnet nach Band und Position. */
@@ -32,3 +33,17 @@ export function groupByVolume(articles: Article[]): Volume[] {
   }
   return [...map.values()];
 }
+
+export type GlossarEintrag = CollectionEntry<'glossar'>;
+
+/** Nur freigegebene Glossareinträge, alphabetisch nach Begriff (deutsche Sortierung). */
+export async function loadGlossar(): Promise<GlossarEintrag[]> {
+  const all = await getCollection('glossar');
+  return all
+    .filter((e) => e.data.status === 'freigegeben')
+    .sort((a, b) => a.data.term.localeCompare(b.data.term, 'de'));
+}
+
+/** Reiner Text als Absätze (Absätze durch Leerzeile getrennt), z. B. die Kurzerklärung. */
+export const glossarAbsaetze = (text: string) =>
+  text.trim().split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);

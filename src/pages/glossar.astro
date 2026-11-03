@@ -1,0 +1,34 @@
+---
+import { render } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { loadGlossar, glossarAbsaetze } from '../lib/library';
+
+const eintraege = await loadGlossar();
+// Ausführliche Erklärung (Seiteninhalt aus Notion) nur, wenn vorhanden
+const liste = await Promise.all(
+  eintraege.map(async (e) => ({
+    e,
+    Detail: (e.body ?? '').trim() ? (await render(e)).Content : null,
+  })),
+);
+---
+<Base title="Glossar">
+  <h1>Glossar</h1>
+  <p class="muted">Erklärungen seltener Fachbegriffe aus den Artikeln, alphabetisch geordnet.</p>
+  {liste.length === 0 ? (
+    <p>Es gibt noch keine Einträge.</p>
+  ) : (
+    <dl class="glossar-liste">
+      {liste.map(({ e, Detail }) => (
+        <div class="glossar-eintrag" id={e.id}>
+          <dt>{e.data.term}</dt>
+          {e.data.variants.length > 0 && <dd class="muted">Weitere Formen: {e.data.variants.join(', ')}</dd>}
+          <dd>
+            {glossarAbsaetze(e.data.summary).map((absatz) => <p>{absatz}</p>)}
+            {Detail && <div class="glossar-detail"><Detail /></div>}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  )}
+</Base>

@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-import { loadArticles, groupByVolume, articleUrl, volumeUrl, withBase } from '../lib/library';
+import { loadArticles, loadGlossar, groupByVolume, articleUrl, volumeUrl, withBase } from '../lib/library';
 
 interface Props {
   title: string;
@@ -9,6 +9,7 @@ interface Props {
 }
 const { title, currentVolume, currentId } = Astro.props;
 const volumes = groupByVolume(await loadArticles());
+const hatGlossar = (await loadGlossar()).length > 0;
 ---
 <!doctype html>
 <html lang="de">
@@ -19,12 +20,13 @@ const volumes = groupByVolume(await loadArticles());
     <link rel="stylesheet" href={withBase('/pagefind/pagefind-component-ui.css')} />
     <script is:inline type="module" src={withBase('/pagefind/pagefind-component-ui.js')}></script>
   </head>
-  <body data-pagefind-pfad={withBase('/pagefind/')}>
+  <body data-pagefind-pfad={withBase('/pagefind/')} data-glossar-pfad={withBase('/glossar.json')}>
     <a class="skip" href="#inhalt">Zum Inhalt springen</a>
         <header class="site-header">
       <a class="site-title" href={withBase('/')}>Bibliothek der Schriften von J. N. Darby</a>
       <div class="site-tools">
         <a href={withBase('/schlagwoerter/')}>Schlagwörter</a>
+        {hatGlossar && <a href={withBase('/glossar/')}>Glossar</a>}
         <div class="site-search">
           <pagefind-config base-url={withBase('/')} highlight-param="highlight" excerpt-length="25"></pagefind-config>
           <pagefind-modal-trigger></pagefind-modal-trigger>
@@ -57,6 +59,7 @@ const volumes = groupByVolume(await loadArticles());
     <footer class="site-footer">
       <p>Prototyp mit erfundenen Testtexten.</p>
     </footer>
+    <script>import '../scripts/glossar.js';</script>
     <script is:inline type="module">
       // Nur aktiv, wenn man über die Suche kommt (Adresse enthält ?highlight=...)
       if (new URLSearchParams(location.search).has('highlight')) {

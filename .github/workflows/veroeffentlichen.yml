@@ -60,6 +60,13 @@ jobs:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
 
+      - name: Freigegebene Glossareinträge aus Notion holen
+        if: vars.SEITE_AKTIV != 'nein'
+        run: npm run fetch:glossar
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_GLOSSAR_DATABASE_ID: ${{ secrets.NOTION_GLOSSAR_DATABASE_ID }}
+
       - name: Website bauen
         if: vars.SEITE_AKTIV != 'nein'
         run: npm run build

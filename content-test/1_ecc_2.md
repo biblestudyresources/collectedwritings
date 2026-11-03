@@ -26,4 +26,4 @@ Eine geordnete Liste:
 
 ---
 
-Nach der Trennlinie folgt noch ein Absatz.
+Nach der Trennlinie folgt noch ein Absatz über die Bedeutung des Bundes.

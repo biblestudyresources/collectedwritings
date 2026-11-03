@@ -30,13 +30,13 @@ export class ArtikelFehler extends Error {}
 export class NotionFehler extends Error {}
 
 const warte = (ms) => new Promise((r) => setTimeout(r, ms));
-const kurz = (s) => (s.length > 40 ? `${s.slice(0, 40)}…` : s);
+export const kurz = (s) => (s.length > 40 ? `${s.slice(0, 40)}…` : s);
 
 // ---------------------------------------------------------------------------
 // Notion-Schnittstelle
 // ---------------------------------------------------------------------------
 
-function erzeugeClient(token) {
+export function erzeugeClient(token) {
   async function notion(pfad, optionen = {}) {
     for (let versuch = 1; versuch <= 5; versuch++) {
       let antwort;
@@ -88,7 +88,7 @@ function erzeugeClient(token) {
 // Feldwerte lesen
 // ---------------------------------------------------------------------------
 
-const plain = (teile) => (teile ?? []).map((t) => t.plain_text).join('');
+export const plain = (teile) => (teile ?? []).map((t) => t.plain_text).join('');
 
 export function wert(feld) {
   switch (feld?.type) {

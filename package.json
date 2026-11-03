@@ -11,7 +11,9 @@
     "preview": "astro preview",
     "long": "node scripts/make-long-article.mjs",
     "notion:test": "node --env-file-if-exists=.env scripts/notion-test.mjs",
-    "fetch:notion": "node --env-file-if-exists=.env scripts/fetch-notion.mjs"
+    "fetch:notion": "node --env-file-if-exists=.env scripts/fetch-notion.mjs",
+    "notion:test:glossar": "node --env-file-if-exists=.env scripts/notion-test-glossar.mjs",
+    "fetch:glossar": "node --env-file-if-exists=.env scripts/fetch-glossar.mjs"
   },
   "dependencies": {
     "@astrojs/markdown-satteri": "0.4.5",
